@@ -88,7 +88,7 @@ const Play = () => {
               <Chessboard
                 position={gamePosition}
                 onPieceDrop={onDrop}
-                boardWidth={Math.min(600, typeof window !== 'undefined' ? window.innerWidth - 64 : 600)}
+                boardWidth={Math.min(600, window.innerWidth - 64)}
                 customBoardStyle={{
                   borderRadius: '8px',
                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
