@@ -1,11 +1,31 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Target, Clock, Star, Trophy, ChevronRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Target, Clock, Star, Trophy, ChevronRight, X, CheckCircle2, AlertCircle, Info } from 'lucide-react'
+import InteractiveChessboard from '../components/InteractiveChessboard'
+import ProgressTracker from '../components/ProgressTracker'
+import { Chess } from 'chess.js'
+
+interface Puzzle {
+  id: number
+  title: string
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced'
+  rating: number
+  theme: string
+  timeLimit: string
+  solved: boolean
+  position?: string
+  solution?: string[]
+  hint?: string
+}
 
 const Practice = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('All')
+  const [selectedPuzzle, setSelectedPuzzle] = useState<Puzzle | null>(null)
+  const [showHint, setShowHint] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [completedSteps, setCompletedSteps] = useState<number[]>([])
   
-  const puzzles = [
+  const puzzles: Puzzle[] = [
     {
       id: 1,
       title: 'Mate in 2',
@@ -13,7 +33,10 @@ const Practice = () => {
       rating: 1200,
       theme: 'Checkmate',
       timeLimit: '5 min',
-      solved: true
+      solved: false,
+      position: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',
+      solution: ['Bxf7+', 'Kxf7', 'Ne5+'],
+      hint: 'Look for a way to force the king into a vulnerable position. Consider sacrificing a piece to open lines.'
     },
     {
       id: 2,
@@ -22,7 +45,9 @@ const Practice = () => {
       rating: 1300,
       theme: 'Fork',
       timeLimit: '3 min',
-      solved: false
+      solved: false,
+      position: 'rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3',
+      hint: 'Use your knight to attack two pieces simultaneously.'
     },
     {
       id: 3,
@@ -31,7 +56,8 @@ const Practice = () => {
       rating: 1500,
       theme: 'Pin',
       timeLimit: '4 min',
-      solved: false
+      solved: false,
+      hint: 'Use your bishop or rook to pin an enemy piece against a more valuable target.'
     },
     {
       id: 4,
@@ -40,7 +66,8 @@ const Practice = () => {
       rating: 1600,
       theme: 'Skewer',
       timeLimit: '6 min',
-      solved: false
+      solved: false,
+      hint: 'Force the enemy to move a valuable piece, exposing a less valuable one behind it.'
     },
     {
       id: 5,
@@ -49,7 +76,8 @@ const Practice = () => {
       rating: 1800,
       theme: 'Discovery',
       timeLimit: '8 min',
-      solved: false
+      solved: false,
+      hint: 'Move a piece to reveal an attack from another piece behind it.'
     },
     {
       id: 6,
@@ -58,7 +86,8 @@ const Practice = () => {
       rating: 1900,
       theme: 'Deflection',
       timeLimit: '10 min',
-      solved: false
+      solved: false,
+      hint: 'Force an enemy piece to abandon its defensive role.'
     }
   ]
 
@@ -76,6 +105,188 @@ const Practice = () => {
   const filteredPuzzles = selectedDifficulty === 'All' 
     ? puzzles 
     : puzzles.filter(puzzle => puzzle.difficulty === selectedDifficulty)
+
+  const handlePuzzleClick = (puzzle: Puzzle) => {
+    setSelectedPuzzle(puzzle)
+    setCurrentStep(0)
+    setCompletedSteps([])
+    setShowHint(false)
+  }
+
+  const closePuzzle = () => {
+    setSelectedPuzzle(null)
+    setCurrentStep(0)
+    setCompletedSteps([])
+    setShowHint(false)
+  }
+
+  const handleMove = (move: any) => {
+    // In a real implementation, validate if the move matches the puzzle solution
+    // For now, just advance to next step
+    if (selectedPuzzle && selectedPuzzle.solution) {
+      const nextStep = currentStep + 1
+      setCurrentStep(nextStep)
+      setCompletedSteps([...completedSteps, currentStep + 1])
+      
+      if (nextStep >= selectedPuzzle.solution.length) {
+        // Puzzle solved!
+        setTimeout(() => {
+          alert('Puzzle solved! Well done!')
+          closePuzzle()
+        }, 1000)
+      }
+    }
+    return true
+  }
+
+  if (selectedPuzzle) {
+    return (
+      <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Puzzle Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <button
+              onClick={closePuzzle}
+              className="flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-4 transition-colors"
+            >
+              <X size={20} />
+              Back to Puzzles
+            </button>
+            
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">{selectedPuzzle.title}</h1>
+                <div className="flex items-center gap-4">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(selectedPuzzle.difficulty)}`}>
+                    {selectedPuzzle.difficulty}
+                  </span>
+                  <span className="text-gray-600">Rating: {selectedPuzzle.rating}</span>
+                  <span className="text-gray-600">Theme: {selectedPuzzle.theme}</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left - Chessboard */}
+            <div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-6"
+              >
+                <InteractiveChessboard
+                  position={selectedPuzzle.position || new Chess().fen()}
+                  onMove={handleMove}
+                  interactive={true}
+                  showHints={showHint}
+                  currentRule={showHint ? selectedPuzzle.hint : null}
+                  orientation="white"
+                />
+              </motion.div>
+
+              {/* Hint Button */}
+              {selectedPuzzle.hint && (
+                <button
+                  onClick={() => setShowHint(!showHint)}
+                  className="w-full btn-secondary flex items-center justify-center gap-2"
+                >
+                  <Info size={18} />
+                  {showHint ? 'Hide Hint' : 'Show Hint'}
+                </button>
+              )}
+            </div>
+
+            {/* Right - Puzzle Info */}
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="card"
+              >
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Target className="text-primary-600" size={20} />
+                  Puzzle Objective
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  Find the best move sequence to achieve the puzzle's goal. Think carefully about each move!
+                </p>
+                
+                {selectedPuzzle.solution && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Solution Steps:</h4>
+                    <div className="space-y-2">
+                      {selectedPuzzle.solution.map((step, index) => (
+                        <div
+                          key={index}
+                          className={`p-3 rounded-lg ${
+                            completedSteps.includes(index + 1)
+                              ? 'bg-green-50 border border-green-200'
+                              : currentStep === index
+                              ? 'bg-blue-50 border border-blue-200'
+                              : 'bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {completedSteps.includes(index + 1) && (
+                              <CheckCircle2 className="text-green-600" size={18} />
+                            )}
+                            <span className="font-medium">Step {index + 1}:</span>
+                            <span className="font-mono">{step}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Progress Tracker */}
+              {selectedPuzzle.solution && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="card"
+                >
+                  <ProgressTracker
+                    current={currentStep + 1}
+                    total={selectedPuzzle.solution.length}
+                    completed={completedSteps}
+                  />
+                </motion.div>
+              )}
+
+              {/* Tips */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="card bg-blue-50 border-blue-200"
+              >
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="text-blue-600 mt-1" size={20} />
+                  <div>
+                    <h4 className="font-semibold text-blue-900 mb-2">Tips</h4>
+                    <ul className="text-blue-800 text-sm space-y-1 list-disc list-inside">
+                      <li>Look for forcing moves (checks, captures, threats)</li>
+                      <li>Consider all candidate moves before deciding</li>
+                      <li>Use the hint if you're stuck, but try first!</li>
+                      <li>Practice regularly to improve pattern recognition</li>
+                    </ul>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
@@ -99,7 +310,7 @@ const Practice = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="flex justify-center mb-8"
         >
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
             {difficulties.map((difficulty) => (
               <button
                 key={difficulty}
@@ -124,7 +335,8 @@ const Practice = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="card group hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+              className="card group hover:shadow-xl transition-all duration-300 cursor-pointer"
+              onClick={() => handlePuzzleClick(puzzle)}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
@@ -132,7 +344,7 @@ const Practice = () => {
                 </div>
                 {puzzle.solved && (
                   <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                    <Star className="text-white" size={16} />
+                    <CheckCircle2 className="text-white" size={16} />
                   </div>
                 )}
               </div>
