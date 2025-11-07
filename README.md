@@ -1,29 +1,8 @@
-<div align="center">
+# How2Chess 🏰♔
 
-# ♔ How2Chess ♛
+A modern, interactive chess learning platform built with React, TypeScript, and Tailwind CSS. Learn chess from beginner to advanced level with interactive lessons, practice puzzles, and AI gameplay.
 
-### Master Chess From Beginner to Pro
-
-[![React](https://img.shields.io/badge/React-18.2-blue?logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-4.4-purple?logo=vite)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.3-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-**A modern, interactive chess learning platform** built with React, TypeScript, and Tailwind CSS. Learn chess from beginner to advanced level with interactive lessons, practice puzzles, and AI gameplay.
-
-```
-    ██╗  ██╗ ██████╗ ██╗    ██╗    ██████╗██╗  ██╗███████╗███████╗███████╗
-    ██║  ██║██╔═══██╗██║    ██║   ██╔════╝██║  ██║██╔════╝██╔════╝██╔════╝
-    ███████║██║   ██║██║ █╗ ██║   ██║     ███████║█████╗  ███████╗███████╗
-    ██╔══██║██║   ██║██║███╗██║   ██║     ██╔══██║██╔══╝  ╚════██║╚════██║
-    ██║  ██║╚██████╔╝╚███╔███╔╝   ╚██████╗██║  ██║███████╗███████║███████║
-    ╚═╝  ╚═╝ ╚═════╝  ╚══╝╚══╝     ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝
-```
-
-[🚀 Quick Start](#-getting-started) • [✨ Features](#-features) • [📖 Documentation](#-usage-guide) • [🤝 Contributing](#-contributing)
-
-</div>
+![How2Chess Banner](https://via.placeholder.com/800x400/0284c7/ffffff?text=How2Chess+-+Learn+Chess+Online)
 
 ## ✨ Features
 
@@ -78,7 +57,7 @@
    ```
 
 4. **Open your browser**
-   Navigate to the URL shown in the terminal (typically `http://localhost:5173`) to see the application.
+   Navigate to `http://localhost:3000` to see the application.
 
 ### Building for Production
 
